@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kinetic Craze - Interactive Kinetic Typography</title>
+
+    <meta name="description" content="Experience Kinetic Craze, an interactive web application that transforms your text into mesmerizing kinetic typography animations. Choose from over 30 effects like vortex, matrix, and 3D sphere.">
+    
+    <meta name="keywords" content="kinetic typography, interactive text, text animation, p5.js, creative coding, web application, visual effects, digital art, Kinetic Craze">
+
+    <link rel="canonical" href="https://pirillo.com/arcade/kinetic-craze.html">
+
+    <meta name="author" content="Chris Pirillo">
+
+    <meta property="og:title" content="Kinetic Craze - Interactive Kinetic Typography">
+    <meta property="og:description" content="Transform text into mesmerizing kinetic art with dozens of interactive animations.">
+    <meta property="og:image" content="https://pirillo.com/arcade/images/kinetic-craze.png">
+    <meta property="og:url" content="https://pirillo.com/arcade/kinetic-craze.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Kinetic Craze">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@ChrisPirillo">
+    <meta name="twitter:creator" content="@ChrisPirillo">
+    <meta name="twitter:title" content="Kinetic Craze - Interactive Kinetic Typography">
+    <meta name="twitter:description" content="An interactive web app that turns your text into stunning kinetic typography animations.">
+    <meta name="twitter:image" content="https://pirillo.com/arcade/images/kinetic-craze.png">
+    <meta name="twitter:image:alt" content="A preview of the Kinetic Craze application showing text animating in a vortex.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://raw.githubusercontent.com/google/fonts/main/ofl/inconsolata/Inconsolata%5Bwdth%2Cwght%5D.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" as="script">
+    <link rel="preload" href="https://pirillo.com/arcade/images/kinetic-craze.png" as="image">
+
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap"></noscript>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1CQ4D3VQ3L"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-1CQ4D3VQ3L');
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Kinetic Craze",
+      "url": "https://pirillo.com/arcade/kinetic-craze.html",
+      "description": "An interactive web application that transforms user-input text into a wide variety of mesmerizing kinetic typography animations using p5.js.",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires a modern web browser with JavaScript enabled.",
+      "screenshot": "https://pirillo.com/arcade/images/kinetic-craze.png",
+      "author": {
+        "@type": "Person",
+        "name": "Chris Pirillo",
+        "url": "https://pirillo.com/"
+      },
+      "creator": {
+        "@type": "Person",
+        "name": "Chris Pirillo",
+        "url": "https://pirillo.com/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Pirillo",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://pirillo.com/images/chrispirillo.jpg" 
+        }
+      }
+    }
+    </script>
+
+    <style>
+        /* Core Web Vitals: font-display: swap ensures text remains visible during font loading */
+        @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap');
+        body {
+            font-family: 'Inconsolata', monospace;
+            overflow: hidden; /* Prevents scrollbars from appearing */
+            /* Prevent text selection */
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard syntax */
+        }
+        /* Container for the p5.js canvas, sits in the background */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        /* Container for the UI, sits on top of the canvas */
+        #ui-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: auto; 
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+
+    <main>
+        <div id="canvas-container"></div>
+
+        <div id="ui-container">
+            <header class="controls bg-gray-900 bg-opacity-70 p-4 rounded-lg shadow-lg flex items-center space-x-4">
+                <label for="textInput" class="text-sm font-medium">Text:</label>
+                <input type="text" id="textInput" value="Pirillo" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                
+                <label for="animationSelector" class="text-sm font-medium">Animation:</label>
+                <select id="animationSelector" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option value="repel">Mouse Repel</option>
+                    <option value="vortex">Vortex</option>
+                    <option value="focus">Focus</option>
+                    <option value="scramble">Scramble</option>
+                    <option value="wave">Wave</option>
+                    <option value="jitter">Jitter</option>
+                    <option value="rain">Rain</option>
+                    <option value="explode">Explode</option>
+                    <option value="implode">Implode</option>
+                    <option value="gravity">Gravity</option>
+                    <option value="follow">Follow</option>
+                    <option value="spiral">Spiral</option>
+                    <option value="h-wave">Horizontal Wave</option>
+                    <option value="d-wave">Diagonal Wave</option>
+                    <option value="reveal">Reveal</option>
+                    <option value="shuffle">Shuffle</option>
+                    <option value="flicker">Flicker</option>
+                    <option value="typewriter">Typewriter</option>
+                    <option value="grid-morph">Grid Morph</option>
+                    <option value="3d-perspective">3D Perspective</option>
+                    <option value="searchlight">Searchlight</option>
+                    <option value="noise-field">Noise Field</option>
+                    <option value="drop-in">Drop In</option>
+                    <option value="wiggle">Wiggle</option>
+                    <option value="breathing">Breathing</option>
+                    <option value="starburst">Starburst</option>
+                    <option value="3d-wall">3D Wall</option>
+                    <option value="matrix">Matrix</option>
+                    <option value="cascade">Cascade</option>
+                    <option value="3d-sphere">3D Sphere</option>
+                    <option value="elastic-grid">Elastic Grid</option>
+                    <option value="ripples">Ripples</option>
+                    <option value="pop-in">Pop In</option>
+                </select>
+            </header>
+        </div>
+    </main>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" defer></script>
+
+    <script defer>
+        // --- p5.js Sketch ---
+        let font;
+        let textToDisplay = 'Pirillo';
+        let tileSize = 20;
+        let tiles = [];
+        let influenceRadius = 150;
+        let animationMode = 'repel';
+        let typewriterIndex = 0;
+        let katakana = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン";
+        let ripples = [];
+
+        // NEW: Specific data structure for the Matrix animation
+        let streams = [];
+
+        function preload() {
+            font = loadFont('https://raw.githubusercontent.com/google/fonts/main/ofl/inconsolata/Inconsolata%5Bwdth%2Cwght%5D.ttf');
+        }
+
+        function setup() {
+            let cnv = createCanvas(windowWidth, windowHeight, WEBGL);
+            cnv.parent('canvas-container');
+            textFont(font);
+            initializeGrid();
+
+            const textInput = document.getElementById('textInput');
+            textInput.addEventListener('input', (e) => {
+                textToDisplay = e.target.value || ' ';
+                if (textToDisplay.trim() === '') textToDisplay = ' ';
+                initializeGrid();
+            });
+
+            const animationSelector = document.getElementById('animationSelector');
+            animationSelector.addEventListener('change', (e) => {
+                animationMode = e.target.value;
+                initializeGrid();
+            });
+        }
+
+        function draw() {
+            // --- NEW: Dedicated drawing logic for Matrix ---
+            if (animationMode === 'matrix') {
+                background(0, 150); // Use a semi-transparent background for fading trails
+                textSize(tileSize * 0.9);
+                textAlign(CENTER, CENTER);
+                noStroke();
+                streams.forEach(stream => stream.render());
+                return; // Skip all other drawing logic
+            }
+            
+            // --- Original drawing logic for all other animations ---
+            background(0);
+            
+            if (animationMode === '3d-wall') {
+                let rotY = map(mouseX, 0, width, -PI/4, PI/4);
+                rotateY(rotY);
+            } else if (animationMode === '3d-sphere') {
+                let rotX = map(mouseY, 0, height, PI, -PI);
+                let rotY = map(mouseX, 0, width, PI, -PI);
+                rotateX(rotX);
+                rotateY(rotY);
+            }
+
+            for(let i = ripples.length - 1; i >= 0; i--) {
+                ripples[i].age += 5;
+                if(ripples[i].age > width) ripples.splice(i, 1);
+            }
+
+            for (let i = 0; i < tiles.length; i++) {
+                tiles[i].update(mouseX - width/2, mouseY - height/2, i);
+                tiles[i].display();
+            }
+            
+            if (animationMode === 'starburst') {
+                for (let tile of tiles) {
+                    const d = dist(mouseX - width/2, mouseY - height/2, tile.x, tile.y);
+                    if (d < influenceRadius) {
+                        stroke(255, map(d, 0, influenceRadius, 200, 0));
+                        strokeWeight(1.5);
+                        line(mouseX - width/2, mouseY - height/2, 0, tile.x, tile.y, tile.z);
+                    }
+                }
+            }
+        }
+
+        function initializeGrid() {
+            // --- NEW: Dedicated setup for Matrix ---
+            if (animationMode === 'matrix') {
+                tiles = []; // Clear the tile data
+                streams = [];
+                const streamCount = floor(width / tileSize);
+                let x = -width / 2;
+                for (let i = 0; i < streamCount; i++) {
+                    streams.push(new Stream(x));
+                    x += tileSize;
+                }
+                return; // Skip other setup logic
+            }
+
+            // --- Original setup for all other animations ---
+            streams = []; // Clear the stream data
+            tiles = [];
+            ripples = [];
+            typewriterIndex = 0;
+            let textIndex = 0;
+            
+            if (animationMode === '3d-sphere') {
+                let sphereRadius = min(width, height) / 3;
+                let numPoints = 500;
+                for (let i = 0; i < numPoints; i++) {
+                    const char = textToDisplay[i % textToDisplay.length];
+                    const phi = acos(-1 + (2 * i) / numPoints);
+                    const theta = sqrt(numPoints * PI) * phi;
+                    const x = sphereRadius * cos(theta) * sin(phi);
+                    const y = sphereRadius * sin(theta) * sin(phi);
+                    const z = sphereRadius * cos(phi);
+                    tiles.push(new Tile(x, y, z, tileSize, char));
+                }
+            } else {
+                let gridWidth = floor(width / tileSize) * tileSize;
+                let gridHeight = floor(height / tileSize) * tileSize;
+                for (let y = -gridHeight / 2; y < gridHeight / 2; y += tileSize) {
+                    for (let x = -gridWidth / 2; x < gridWidth / 2; x += tileSize) {
+                        const char = textToDisplay[textIndex % textToDisplay.length];
+                        tiles.push(new Tile(x + tileSize / 2, y + tileSize / 2, 0, tileSize, char));
+                        textIndex++;
+                    }
+                }
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            initializeGrid();
+        }
+        
+        // --- Event handlers remain the same ---
+        function mouseClicked() {
+            if (animationMode === 'matrix') return;
+            const mx = mouseX - width/2;
+            const my = mouseY - height/2;
+            if (animationMode === 'explode' || animationMode === 'implode') {
+                for (let tile of tiles) tile.applyClickForce(mx, my);
+            } else if (animationMode === 'ripples') {
+                ripples.push({x: mx, y: my, age: 0});
+            }
+        }
+        function mouseDragged() {
+            if (animationMode === 'elastic-grid') {
+                 for (let tile of tiles) tile.applyDragForce(mouseX - width/2, mouseY - height/2, pmouseX - width/2, pmouseY - height/2);
+            }
+        }
+        function touchStarted() { if (animationMode !== 'matrix') mouseClicked(); }
+        function touchMoved() { if (animationMode !== 'matrix') mouseDragged(); }
+
+        // --- NEW: Stream Class for Matrix Effect ---
+        class Stream {
+            constructor(x) {
+                this.x = x;
+                this.y = random(-height, 0);
+                this.speed = random(3, 8);
+                this.length = floor(random(10, 30));
+                this.symbols = [];
+                this.generateSymbols();
+            }
+
+            generateSymbols() {
+                this.symbols = [];
+                let textIndex = floor(random(textToDisplay.length));
+                for (let i = 0; i < this.length; i++) {
+                    this.symbols.push({
+                        char: (random() > 0.2) ? katakana.charAt(floor(random(katakana.length))) : textToDisplay[textIndex % textToDisplay.length],
+                        isHead: i === 0,
+                    });
+                    textIndex++;
+                }
+            }
+
+            render() {
+                this.y += this.speed;
+                if (this.y - (this.length * tileSize) > height / 2) {
+                    this.y = random(-height, 0);
+                    this.speed = random(3, 8);
+                    this.generateSymbols();
+                }
+
+                for (let i = 0; i < this.symbols.length; i++) {
+                    const symbol = this.symbols[i];
+                    const yPos = this.y - (i * tileSize);
+                    
+                    if (yPos > height / 2 || yPos < -height / 2) continue;
+
+                    if (symbol.isHead) {
+                        fill(200, 255, 200);
+                    } else {
+                        const alpha = map(i, 1, this.length, 255, 50);
+                        fill(0, 255, 70, alpha);
+                    }
+                    text(symbol.char, this.x, yPos);
+
+                    if (random() > 0.98 && !symbol.isHead) {
+                        symbol.char = katakana.charAt(floor(random(katakana.length)));
+                    }
+                }
+            }
+        }
+
+        // --- Original Tile Class (unchanged) ---
+        class Tile {
+            constructor(x, y, z, size, char) {
+                this.originalX = x; this.originalY = y; this.originalZ = z;
+                this.originalChar = char; this.originalSize = size;
+                this.x = x; this.y = y; this.z = z; this.size = size;
+                this.char = char; this.angle = 0;
+                this.scaleX = 1; this.scaleY = 1; this.fill = 255;
+                this.vx = 0; this.vy = 0; this.vz = 0;
+                this.rainSpeed = random(2, 6); this.matrixSpeed = random(2, 6); this.cascadeDelay = 0;
+                this.isSettled = animationMode !== 'drop-in';
+                if (animationMode === 'drop-in') this.y = -height/2 - random(height);
+                this.popTime = random(100);
+            }
+            applyClickForce(mx, my) {
+                let d = dist(mx, my, this.x, this.y);
+                let force = createVector(this.x - mx, this.y - my);
+                force.setMag(map(d, 0, width / 2, 50, 0));
+                if (animationMode === 'explode') { this.vx += force.x; this.vy += force.y; } 
+                else if (animationMode === 'implode') { this.vx -= force.x; this.vy -= force.y; }
+            }
+            applyDragForce(mx, my, pmx, pmy) {
+                if (dist(mx, my, this.x, this.y) < influenceRadius) {
+                    this.vx += (mx - pmx) * 0.1; this.vy += (my - pmy) * 0.1;
+                }
+            }
+            update(mx, my, index) {
+                let targetX = this.originalX, targetY = this.originalY, targetZ = this.originalZ, targetAngle = 0, targetScaleX = 1, targetScaleY = 1, targetChar = this.originalChar, targetFill = 255;
+                switch (animationMode) {
+                    case 'repel': { const d = dist(mx, my, this.originalX, this.originalY); if (d < influenceRadius) { const force = createVector(this.originalX - mx, this.originalY - my); const proximity = map(d, 0, influenceRadius, 1, 0); force.setMag(proximity * 50); targetX = this.originalX + force.x; targetY = this.originalY + force.y; targetAngle = proximity * PI; } break; }
+                    case 'vortex': { const d = dist(mx, my, this.originalX, this.originalY); if (d < influenceRadius && d > 0) { const proximity = map(d, 0, influenceRadius, 1, 0); const vectorToMouse = createVector(this.originalX - mx, this.originalY - my); const pullForce = vectorToMouse.copy().mult(-1).setMag(proximity * proximity * 10); const tangentialForce = vectorToMouse.copy().rotate(HALF_PI).setMag(proximity * 15); targetX = this.originalX + pullForce.x + tangentialForce.x; targetY = this.originalY + pullForce.y + tangentialForce.y; targetAngle = atan2(my - this.y, mx - this.x); } break; }
+                    case 'focus': { const d = dist(mx, my, this.originalX, this.originalY); if (d < influenceRadius) { const proximity = map(d, 0, influenceRadius, 1, 0); targetScaleX = targetScaleY = map(proximity, 0, 1, 3, 0.5); targetFill = map(proximity, 0, 1, 255, 50); } else { targetScaleX = targetScaleY = 0.5; targetFill = 50; } break; }
+                    case 'scramble': { if (dist(mx, my, this.originalX, this.originalY) < influenceRadius && random(1) < 0.5) targetChar = String.fromCharCode(33 + floor(random(94))); break; }
+                    case 'wave': { targetY = this.originalY + sin(frameCount * 0.05 + this.originalX * 0.04) * 30; break; }
+                    case 'jitter': { targetX = this.originalX + random(-5, 5); targetY = this.originalY + random(-5, 5); break; }
+                    case 'rain': { this.y += this.rainSpeed; if (this.y > height / 2 + this.originalSize) this.y = -height / 2 - this.originalSize; this.x = this.originalX; return; }
+                    case 'explode': case 'implode': { this.x += this.vx; this.y += this.vy; this.vx *= 0.95; this.vy *= 0.95; return; }
+                    case 'gravity': { this.vy += 0.2; this.x += this.vx; this.y += this.vy; this.vx *= 0.99; if (this.y > height/2 - this.originalSize / 2) { this.y = height/2 - this.originalSize / 2; this.vy *= -0.8; } return; }
+                    case 'follow': { const toMouse = createVector(mx - this.x, my - this.y); toMouse.setMag(0.05); this.vx += toMouse.x; this.vy += toMouse.y; const toOriginal = createVector(this.originalX - this.x, this.originalY - this.y); toOriginal.setMag(0.04); this.vx += toOriginal.x; this.vy += toOriginal.y; this.x += this.vx; this.y += this.vy; this.vx *= 0.85; this.vy *= 0.85; return; }
+                    case 'spiral': { const d = dist(mx, my, this.originalX, this.originalY); const angle = frameCount * 0.05 + d * 0.02; const radius = 25 + sin(frameCount * 0.05 + d * 0.05) * 15; targetX = this.originalX + cos(angle) * radius; targetY = this.originalY + sin(angle) * radius; break; }
+                    case 'h-wave': { targetX = this.originalX + sin(frameCount * 0.05 + this.originalY * 0.04) * 30; break; }
+                    case 'd-wave': { const wave = sin(frameCount * 0.05 + (this.originalX + this.originalY) * 0.02); targetX = this.originalX + wave * 20; targetY = this.originalY + wave * 20; break; }
+                    case 'reveal': { targetScaleX = targetScaleY = dist(mx, my, this.originalX, this.originalY) < influenceRadius ? 1 : 0; break; }
+                    case 'shuffle': { if (frameCount % 60 === 0) { targetX = tiles[floor(random(tiles.length))].originalX; targetY = tiles[floor(random(tiles.length))].originalY; } break; }
+                    case 'flicker': { targetFill = random(50, 255); break; }
+                    case 'typewriter': { if (index > typewriterIndex) targetScaleX = targetScaleY = 0; if (index === typewriterIndex && frameCount % 60 < 30) targetChar = '_'; if (frameCount % 10 === 0) typewriterIndex++; if(typewriterIndex > tiles.length) typewriterIndex = 0; break; }
+                    case 'grid-morph': { const noiseVal = noise(this.originalX * 0.01, this.originalY * 0.01, frameCount * 0.01); targetX = this.originalX + cos(noiseVal * TWO_PI) * 25; targetY = this.originalY + sin(noiseVal * TWO_PI) * 25; break; }
+                    case '3d-perspective': { const perspective = map(my, -height/2, height/2, 0.5, 2.0); targetY = this.originalY + (this.originalY * perspective); targetScaleX = targetScaleY = perspective; break; }
+                    case 'searchlight': { targetFill = dist(mx, my, this.originalX, this.originalY) < influenceRadius ? 255 : 0; break; }
+                    case 'noise-field': { const noiseAngle = noise(this.originalX * 0.005, this.originalY * 0.005, frameCount * 0.005) * TWO_PI * 2; const noiseVector = p5.Vector.fromAngle(noiseAngle); noiseVector.setMag(1); this.x += noiseVector.x; this.y += noiseVector.y; return; }
+                    case 'drop-in': { targetY = this.originalY; if (this.isSettled && random(1) < 0.005) { this.y = -height/2 - random(height/2); this.isSettled = false; } if (abs(this.y - this.originalY) < 1) this.isSettled = true; break; }
+                    case 'wiggle': { targetAngle = sin(frameCount * 0.2 + this.originalX * 0.1) * 0.5; break; }
+                    case 'breathing': { targetScaleX = targetScaleY = map(sin(frameCount * 0.05), -1, 1, 0.7, 1.3); break; }
+                    case 'cascade': { if (this.cascadeDelay === 0) this.cascadeDelay = frameCount + index * 3; if (frameCount > this.cascadeDelay) { this.vy += 0.2; this.y += this.vy; } if (this.y > height / 2 + this.originalSize) { this.y = -height / 2 - this.originalSize; this.vy = 0; this.cascadeDelay = frameCount + index * 3 + (tiles.length * 2); } this.x = this.originalX; return; }
+                    case 'elastic-grid': { const toOriginal = createVector(this.originalX - this.x, this.originalY - this.y); toOriginal.setMag(0.1); this.vx += toOriginal.x; this.vy += toOriginal.y; this.x += this.vx; this.y += this.vy; this.vx *= 0.8; this.vy *= 0.8; return; }
+                    case 'ripples': { let totalScale = 1; for(let ripple of ripples) { let d = dist(this.originalX, this.originalY, ripple.x, ripple.y); if(d < ripple.age && d > ripple.age - 50) { totalScale += sin((d - ripple.age) * 0.1) * 1.5; } } targetScaleX = targetScaleY = totalScale; break; }
+                    case 'pop-in': { const popCycle = 120; const phase = (frameCount + this.popTime) % popCycle; if(phase < 10) targetScaleX = targetScaleY = map(phase, 0, 10, 0, 1.2); else if (phase < 20) targetScaleX = targetScaleY = map(phase, 10, 20, 1.2, 1); else targetScaleX = targetScaleY = 1; break; }
+                }
+                const distToMouse = dist(mx, my, this.x, this.y);
+                if (distToMouse < influenceRadius) { const sizeMultiplier = map(distToMouse, 0, influenceRadius, 1.5, 1); targetScaleX *= sizeMultiplier; targetScaleY *= sizeMultiplier; }
+                this.x = lerp(this.x, targetX, 0.1); this.y = lerp(this.y, targetY, 0.1); this.z = lerp(this.z, targetZ, 0.1); this.angle = lerp(this.angle, targetAngle, 0.1); this.scaleX = lerp(this.scaleX, targetScaleX, 0.1); this.scaleY = lerp(this.scaleY, targetScaleY, 0.1); this.char = targetChar;
+                if(animationMode !== 'matrix') { this.fill = lerpColor(color(this.fill), color(targetFill), 0.1); }
+            }
+            display() {
+                push();
+                translate(this.x, this.y, this.z);
+                if (animationMode === '3d-sphere') {
+                    let cam = createVector(0, 0, (height/2) / tan(PI/6)); let v = createVector(this.x, this.y, this.z); let delta = p5.Vector.sub(cam, v);
+                    rotateY(atan2(delta.x, delta.z)); rotateX(-atan2(delta.y, createVector(delta.x, delta.z).mag()));
+                }
+                rotateZ(this.angle); scale(this.scaleX, this.scaleY); textAlign(CENTER, CENTER);
+                textSize(this.originalSize * 0.8); noStroke(); fill(this.fill); text(this.char, 0, 0);
+                pop();
+            }
+        }
+    </script>
+
+</body>
+</html>
